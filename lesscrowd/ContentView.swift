@@ -12,10 +12,15 @@ import CoreLocation
 extension CWNetwork: Identifiable {}
 extension CWInterface: Identifiable {}
 
+enum WifiBands: String {
+    case Both = "2.4GHz + 5GHz", GHz2_4 = "2.4GHz", GHz5 = "5GHz"
+}
+
 struct ContentView: View {
     @State var wifis: [CWNetwork] = []
     @State var adpts: [CWInterface] = []
     @State private var defAdpt: CWInterface?
+    @State private var scanBand: WifiBands = .Both
     
     var body: some View {
         Form {
@@ -33,13 +38,51 @@ struct ContentView: View {
                     }
                 }
             }
+            Section(header: Text("Scan options. Selected band: \(scanBand.rawValue)").bold()) {
+                HStack {
+                    Button {
+                        scanBand = .Both
+                    } label: {
+                        Text("Scan Both: 2.4GHz + 5GHz")
+                    }
+                    Button {
+                        scanBand = .GHz2_4
+                    } label: {
+                        Text("2.4GHz")
+                    }
+                    Button {
+                        scanBand = .GHz5
+                    } label: {
+                        Text("5GHz")
+                    }
+                }
+            }
             Section(header: Text("Access point detected: \(wifis.count)").bold()) {
                 ScrollView {
-                    ForEach(wifis) {
+                    ForEach(wifis.filter {
+                        row in
+                        if let c = row.wlanChannel?.channelNumber {
+                            switch scanBand {
+                            case .Both:
+                                return true
+                            case .GHz2_4:
+                                if c <= 13 {
+                                    return true
+                                }
+                            case .GHz5:
+                                if c > 13 {
+                                    return true
+                                }
+                            }
+                            return false
+                        } else {
+                            return false
+                        }
+                    }) {
                         row in
                         HStack(spacing: 20) {
-                            if let c = row.wlanChannel {
-                                Text("CH\n\(c.channelNumber)")
+                            if let c = row.wlanChannel?.channelNumber {
+                                Text("CH\n\(c)")
                                     .font(.system(size: 12))
                                     .bold()
                                     .frame(width: 50, height: 50)
