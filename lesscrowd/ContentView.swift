@@ -37,17 +37,33 @@ struct ContentView: View {
                 ScrollView {
                     ForEach(wifis) {
                         row in
-                        VStack(alignment: .leading) {
-                            Text(row.ssid ?? "Read Error")
-                                .bold()
-                                .font(.system(size: 16))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("[\(row.bssid ?? "00:00:00:00:00")] RSSI: \(row.rssiValue) dBm")
-                            if let wchannel = row.wlanChannel {
-                                Text("Band: \(wchannel.channelNumber > 13 ? "5GHz" : "2.4GHz") Channel: \(wchannel.channelNumber)")
+                        HStack(spacing: 20) {
+                            if let c = row.wlanChannel {
+                                Text("CH\n\(c.channelNumber)")
+                                    .font(.system(size: 12))
+                                    .bold()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(Color.white)
+                                    .background(Color.black)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .circular))
                             }
+                            VStack(alignment: .leading) {
+                                Text(row.ssid ?? "Read Error")
+                                    .bold()
+                                    .font(.system(size: 16))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Text("[\(row.bssid ?? "00:00:00:00:00")]")
+                            }
+                            Spacer()
+                            if let c = row.wlanChannel {
+                                Text("\(c.channelNumber > 13 ? "5GHz" : "2.4GHz")")
+                                    .bold()
+                                    .font(.system(size: 14))
+                            }
+                            Text("\(row.rssiValue) dBm")
+                                .bold()
+                                .font(.system(size: 14))
                         }
-                        .frame(maxWidth: .infinity)
                         .padding(10)
                     }
                 }
@@ -70,17 +86,8 @@ struct ContentView: View {
     private func scanWifi() async {
         if let adpt = defAdpt {
             do {
-                var w: [CWNetwork] = try Array(adpt.scanForNetworks(withName: nil))
-                for i in 0..<w.count {
-                    for j in stride(from: i + 1, to: w.count, by: 1) {
-                        if w[j].rssiValue > w[i].rssiValue {
-                            let jRow = w[j]
-                            w[j] = w[i]
-                            w[i] = jRow
-                        }
-                    }
-                }
-                wifis = w
+                let w: [CWNetwork] = try Array(adpt.scanForNetworks(withName: nil))
+                wifis = w.sorted { $1.rssiValue < $0.rssiValue }
             } catch {
                 print(error.localizedDescription)
             }
