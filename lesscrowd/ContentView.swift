@@ -13,14 +13,59 @@ extension CWNetwork: Identifiable {}
 extension CWInterface: Identifiable {}
 
 enum WifiBands: String {
-    case Both = "2.4GHz + 5GHz", GHz2_4 = "2.4GHz", GHz5 = "5GHz"
+    case both = "2.4GHz + 5GHz", ghz2_4 = "2.4GHz", ghz5 = "5GHz"
+}
+
+enum WifiOrderBy: String, CaseIterable, Identifiable {
+    case channel, rssi
+    
+    var id: String {
+        return self.rawValue
+    }
 }
 
 struct ContentView: View {
-    @State var wifis: [CWNetwork] = []
-    @State var adpts: [CWInterface] = []
+    @State private var wifis: [CWNetwork] = []
+    @State private var adpts: [CWInterface] = []
     @State private var defAdpt: CWInterface?
-    @State private var scanBand: WifiBands = .Both
+    @State private var scanBand: WifiBands = .both
+    @State private var orderBy: WifiOrderBy = .channel
+    @State private var orderByAsc = true
+    
+    private var wifisData: [CWNetwork] {
+        wifis.sorted {
+            a, b in
+            if orderBy == .channel {
+                if let ac = a.wlanChannel?.channelNumber, let bc = b.wlanChannel?.channelNumber {
+                    return orderByAsc ? ac < bc : ac > bc
+                } else {
+                    return false
+                }
+            } else {
+                return orderByAsc ? a.rssiValue > b.rssiValue : a.rssiValue < b.rssiValue
+            }
+        }
+        .filter {
+            row in
+            if let c = row.wlanChannel?.channelNumber {
+                switch scanBand {
+                case .both:
+                    return true
+                case .ghz2_4:
+                    if c <= 13 {
+                        return true
+                    }
+                case .ghz5:
+                    if c > 13 {
+                        return true
+                    }
+                }
+                return false
+            } else {
+                return false
+            }
+        }
+    }
     
     var body: some View {
         Form {
@@ -41,17 +86,17 @@ struct ContentView: View {
             Section(header: Text("Scan options. Selected band: \(scanBand.rawValue)").bold()) {
                 HStack {
                     Button {
-                        scanBand = .Both
+                        scanBand = .both
                     } label: {
                         Text("Scan Both: 2.4GHz + 5GHz")
                     }
                     Button {
-                        scanBand = .GHz2_4
+                        scanBand = .ghz2_4
                     } label: {
                         Text("2.4GHz")
                     }
                     Button {
-                        scanBand = .GHz5
+                        scanBand = .ghz5
                     } label: {
                         Text("5GHz")
                     }
@@ -59,26 +104,7 @@ struct ContentView: View {
             }
             Section(header: Text("Access point detected: \(wifis.count)").bold()) {
                 ScrollView {
-                    ForEach(wifis.filter {
-                        row in
-                        if let c = row.wlanChannel?.channelNumber {
-                            switch scanBand {
-                            case .Both:
-                                return true
-                            case .GHz2_4:
-                                if c <= 13 {
-                                    return true
-                                }
-                            case .GHz5:
-                                if c > 13 {
-                                    return true
-                                }
-                            }
-                            return false
-                        } else {
-                            return false
-                        }
-                    }) {
+                    ForEach(wifisData) {
                         row in
                         HStack(spacing: 20) {
                             if let c = row.wlanChannel?.channelNumber {
@@ -108,6 +134,18 @@ struct ContentView: View {
                                 .font(.system(size: 14))
                         }
                         .padding(10)
+                    }
+                }
+            }
+            Section(header: Text("Sort by").bold()) {
+                HStack {
+                    Picker("", selection: $orderBy) {
+                        ForEach(WifiOrderBy.allCases) {
+                            row in Text(row.rawValue).tag(row)
+                        }
+                    }
+                    Toggle(isOn: $orderByAsc) {
+                        Text("Ascending")
                     }
                 }
             }
