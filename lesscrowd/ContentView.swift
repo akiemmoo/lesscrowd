@@ -454,7 +454,7 @@ struct ContentView: View {
                     WaveIconView()
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("LessCrowd")
+                        Text("lesscrowd")
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.white)
                         
