@@ -13,15 +13,15 @@ extension CWNetwork: Identifiable {}
 extension CWInterface: Identifiable {}
 
 extension Color {
-    static let customCyan = Color(red: 0.0, green: 0.7, blue: 0.9)
+    static let customRed = Color(red: 0.9, green: 0.15, blue: 0.2)
 }
 
 // MARK: - Themes & Styling
 struct Theme {
     static let background = Color(red: 0.08, green: 0.08, blue: 0.1)
     static let cardBackground = Color(red: 0.14, green: 0.14, blue: 0.18).opacity(0.7)
-    static let accent = Color.customCyan
-    static let secondaryAccent = Color.purple
+    static let accent = Color.customRed
+    static let secondaryAccent = Color(red: 0.6, green: 0.05, blue: 0.1)
 }
 
 enum WifiBands: String {
@@ -247,13 +247,13 @@ struct WiFiNetworkCard: View {
             .frame(width: 48, height: 48)
             .background(
                 LinearGradient(
-                    colors: network.band == .ghz5 ? [Color.customCyan, Color.blue] : [Color.orange, Color.pink],
+                    colors: network.band == .ghz5 ? [Color.customRed, Color(red: 0.6, green: 0.05, blue: 0.1)] : [Color.orange, Color.pink],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
             .cornerRadius(10)
-            .shadow(color: (network.band == .ghz5 ? Color.blue : Color.orange).opacity(0.3), radius: 4)
+            .shadow(color: (network.band == .ghz5 ? Color(red: 0.6, green: 0.05, blue: 0.1) : Color.orange).opacity(0.3), radius: 4)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(network.ssid)
@@ -274,12 +274,12 @@ struct WiFiNetworkCard: View {
                 .padding(.vertical, 4)
                 .background(
                     Capsule()
-                        .fill(network.band == .ghz5 ? Color.blue.opacity(0.15) : Color.orange.opacity(0.15))
+                        .fill(network.band == .ghz5 ? Color.customRed.opacity(0.15) : Color.orange.opacity(0.15))
                 )
-                .foregroundColor(network.band == .ghz5 ? Color.customCyan : Color.orange)
+                .foregroundColor(network.band == .ghz5 ? Color.customRed : Color.orange)
                 .overlay(
                     Capsule()
-                        .stroke(network.band == .ghz5 ? Color.blue.opacity(0.3) : Color.orange.opacity(0.3), lineWidth: 1)
+                        .stroke(network.band == .ghz5 ? Color.customRed.opacity(0.3) : Color.orange.opacity(0.3), lineWidth: 1)
                 )
             
             HStack(spacing: 12) {
@@ -351,7 +351,7 @@ struct CongestionSpectrumView: View {
                             RoundedRectangle(cornerRadius: 3)
                                 .fill(
                                     LinearGradient(
-                                        colors: is5G ? [Color.customCyan, Color.blue] : [Color.orange, Color.pink],
+                                        colors: is5G ? [Color.customRed, Color(red: 0.6, green: 0.05, blue: 0.1)] : [Color.orange, Color.pink],
                                         startPoint: .bottom,
                                         endPoint: .top
                                     )
@@ -643,7 +643,7 @@ struct ContentView: View {
                 // Header block
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Diagnostic Dashboard")
+                        Text("Looking for that bad shit wifis")
                             .font(.system(size: 24, weight: .heavy))
                             .foregroundColor(.white)
                         
@@ -690,7 +690,7 @@ struct ContentView: View {
                         title: "Detected Access Points",
                         value: "\(totalDetected)",
                         icon: "antenna.radiowaves.left.and.right",
-                        gradientColors: [.customCyan, .blue]
+                        gradientColors: [.customRed, Color(red: 0.6, green: 0.05, blue: 0.1)]
                     )
                     
                     StatCard(
@@ -704,14 +704,14 @@ struct ContentView: View {
                         title: "Recommended 5G",
                         value: recommended5Str,
                         icon: "bolt.fill",
-                        gradientColors: [.purple, .blue]
+                        gradientColors: [.customRed, .pink]
                     )
                     
                     StatCard(
                         title: "Band Distribution",
                         value: bandBreakdown,
                         icon: "chart.bar.fill",
-                        gradientColors: [.green, .customCyan]
+                        gradientColors: [.orange, .customRed]
                     )
                 }
                 
