@@ -77,6 +77,11 @@ struct ContentView: View {
                         }
                     }
                     Button {
+                        Task { await getAdapters() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    Button {
                         Task { await scanWifi() }
                     } label: {
                         Text("Scan wifi")
@@ -152,15 +157,7 @@ struct ContentView: View {
         }
         .padding()
         .onAppear {
-            let locMan = CLLocationManager()
-            if locMan.authorizationStatus == .notDetermined {
-                locMan.requestWhenInUseAuthorization()
-            }
-            let c: CWWiFiClient = CWWiFiClient()
-            defAdpt = c.interface()
-            if let adapters = c.interfaces() {
-                adpts = adapters
-            }
+            Task { await getAdapters() }
         }
     }
     
@@ -172,6 +169,18 @@ struct ContentView: View {
             } catch {
                 print(error.localizedDescription)
             }
+        }
+    }
+    
+    private func getAdapters() async {
+        let locMan = CLLocationManager()
+        if locMan.authorizationStatus == .notDetermined {
+            locMan.requestWhenInUseAuthorization()
+        }
+        let c: CWWiFiClient = CWWiFiClient()
+        defAdpt = c.interface()
+        if let adapters = c.interfaces() {
+            adpts = adapters
         }
     }
 }
